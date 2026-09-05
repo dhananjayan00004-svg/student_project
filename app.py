@@ -1,3 +1,3 @@
 import streamlit as sp
-sp.title("HELLO UNCLE😜")
-sp.write("WELCOME TO DHANANJAYAN WEBSITE")
+sp.title("HELLO GUYS😜🤓")
+sp.write("welcome to dhananjayan website 🤓")
