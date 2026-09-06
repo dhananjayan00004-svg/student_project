@@ -1,5 +1,5 @@
 import streamlit as st
-from db_helper import init_db, add_user
+from db_helper import init_db, add_user,verify_user
 
 def main():
     init_db()
@@ -22,8 +22,11 @@ def main():
         username = st.text_input("Username")
         password = st.text_input("Password", type="password")
         if st.button("Login"):
+            if verify_user(username, password):
+                st.success(f"Logged in as {username}!")
+            else:
+                st.error("Invalid username or password.")
             # Here you would add logic to authenticate the user
-            st.success(f"Logged in as {username}!")
 
 if __name__ == "__main__":
     main()
