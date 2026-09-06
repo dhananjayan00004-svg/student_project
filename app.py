@@ -1,5 +1,5 @@
 import streamlit as st
-from db_helper import init_db
+from db_helper import init_db, add_user
 
 def main():
     init_db()
@@ -10,8 +10,13 @@ def main():
         new_username = st.text_input("New Username")
         new_password = st.text_input("New Password", type="password")
         if st.button("Create Account"):
-            # Here you would add logic to create the account in the database
-            st.success(f"Account created for {new_username}!")
+            if new_username and new_password:
+                add_user(new_username, new_password)
+                st.success(f"Account created for {new_username}!")
+            elif not new_username or not new_password:
+                st.error("Please enter both username and password.")
+            else:
+                st.error("Account creation failed. Please try again.")
     elif choice == "Login":
         st.subheader("Login")
         username = st.text_input("Username")
