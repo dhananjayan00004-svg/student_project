@@ -95,7 +95,11 @@ def main():
             if st.button("📈 Analytics", type=an_type, use_container_width=True):
                 st.session_state.current_page = "Analytics"
                 st.rerun()
-            
+            cd_type = "primary" if st.session_state.current_page == "contact Us" else "secondary"
+            if st.button("📞 Contact Us", type=cd_type, use_container_width=True):
+                st.session_state.current_page = "contact Us"
+                st.rerun()
+
             st.markdown("---")
             # 🚪 Log Out button label
             if st.button("🚪 Log Out", use_container_width=True):
