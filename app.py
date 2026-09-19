@@ -2,18 +2,6 @@ import streamlit as st
 from db_helper import init_db, add_user,verify_user, get_all_users
 def main():
     init_db()
-    if 'logged_in' not in st.session_state:
-        st.session_state.logged_in = False
-
-    if "username" not in st.session_state:
-        st.session_state.username = ""
-    if st.session_state.logged_in:
-        st.title(f"Welcome, {st.session_state.username}!")
-        st.write("You have successfully logged in.")
-        if st.button("Logout"):
-            st.session_state.logged_in = False
-            st.session_state.username = ""
-            st.success("Logged out successfully.")
     st.title("login page")
     choice = st.selectbox("Choose an option", ["Login", "Create Account"])
     if choice == "Create Account":
@@ -34,10 +22,12 @@ def main():
         password = st.text_input("Password", type="password")
         if st.button("Login"):
             if verify_user(username, password):
-                st.success(f"Logged in as {username}!")
+                st.session_state.logged_in = True
+                st.session_state.username = username
+                st.rerun()
             else:
                 st.error("Invalid username or password.")
-            # Here you would add logic to authenticate the user
+           
 
 if __name__ == "__main__":
     main()
