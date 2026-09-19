@@ -1,5 +1,4 @@
 import sqlite3
-from turtle import st
 
 DATABASE_NAME = 'users.db'
 
