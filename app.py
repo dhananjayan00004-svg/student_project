@@ -3,7 +3,7 @@ import streamlit as st
 from datetime import datetime  # Imported datetime to track login timestamps
 # Import functions from your separate database file
 from db_helper import init_db, add_user, verify_user, fetch_users, change_password
-
+import openpyxl  # For reading Excel files
 # Main app
 def main():
     init_db()
@@ -95,11 +95,16 @@ def main():
             if st.button("📈 Analytics", type=an_type, use_container_width=True):
                 st.session_state.current_page = "Analytics"
                 st.rerun()
+            # Contact Us Menu Item
             ce_type = "primary" if st.session_state.current_page == "Contact US" else "secondary"
             if st.button("📞 Contact Us", type=ce_type, use_container_width=True):
                 st.session_state.current_page = "Contact US"
                 st.rerun()
-
+            #input data file menu item
+            de_type = "primary" if st.session_state.current_page == "Data Entry" else "secondary"
+            if st.button("📝 Data Entry", type=de_type, use_container_width=True):
+                st.session_state.current_page = "Data Entry"
+                st.rerun()
             st.markdown("---")
             # 🚪 Log Out button label
             if st.button("🚪 Log Out", use_container_width=True):
@@ -170,9 +175,9 @@ def main():
             st.write(f"This is your personalized {st.session_state.current_page.lower()} view.")
         
         #elif st.session_state.current_page == "Contact US":
-        #    st.subheader("📞 Contact Us")
+        #    st.subheader("Contact Us")
         #    st.write("For any inquiries, please reach out to us.")
-        
+        #📞 Contact Us VIEW
         elif st.session_state.current_page == "Contact US":
             # 1. Define the pop-up window using the @st.dialog decorator
             @st.dialog("Contact Information", width="small")
@@ -203,8 +208,29 @@ def main():
             if st.button("Contact Us"):
                 show_contact_form()
                 st.write(f"This is your personalized {st.session_state.current_page.lower()} view.")
-                        
+        #📝 Data Entry VIE
+        elif st.session_state.current_page == "Data Entry":
+            st.subheader("📝 Data Entry")
+            
+            st.title("📂 Excel File Upload")
+                                                    
+            uploaded_file = st.file_uploader(
+            "Upload Excel File",
+            type=["xlsx", "xls"]
+            )
+            if uploaded_file is not None:
+                try:
+                    # Read the uploaded Excel file into a DataFrame
+                    df = pd.read_excel(uploaded_file)
+                    st.success("File uploaded successfully!")
+                    st.dataframe(df)  # Display the DataFrame in the app
+                    
+                    # Optionally, you can add functionality to save this DataFrame to a database or perform further processing.
+                except Exception as e:
+                    st.error(f"Error reading the Excel file: {e}")
+            
 
+                
 
     # --- BEFORE LOGIN VIEW (LOGIN / SIGNUP ONLY) ---
     else:
