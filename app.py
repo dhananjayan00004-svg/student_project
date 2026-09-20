@@ -95,9 +95,9 @@ def main():
             if st.button("📈 Analytics", type=an_type, use_container_width=True):
                 st.session_state.current_page = "Analytics"
                 st.rerun()
-            cd_type = "primary" if st.session_state.current_page == "contact Us" else "secondary"
-            if st.button("📞 Contact Us", type=cd_type, use_container_width=True):
-                st.session_state.current_page = "contact Us"
+            ce_type = "primary" if st.session_state.current_page == "Contact US" else "secondary"
+            if st.button("📞 Contact Us", type=ce_type, use_container_width=True):
+                st.session_state.current_page = "Contact US"
                 st.rerun()
 
             st.markdown("---")
@@ -165,9 +165,47 @@ def main():
                                 st.error("Incorrect current password.")
 
         # 📊 ANALYTICS VIEW
-        else:
+        elif st.session_state.current_page == "Analytics":
+            st.subheader("📊 Analytics")
             st.write(f"This is your personalized {st.session_state.current_page.lower()} view.")
         
+        #elif st.session_state.current_page == "Contact US":
+        #    st.subheader("📞 Contact Us")
+        #    st.write("For any inquiries, please reach out to us.")
+        
+        elif st.session_state.current_page == "Contact US":
+            # 1. Define the pop-up window using the @st.dialog decorator
+            @st.dialog("Contact Information", width="small")
+            def show_contact_form():
+                st.write("Feel free to reach out using the form below!")
+    
+                # Add input fields inside the modal
+                name = st.text_input("Your Name")
+                email = st.text_input("Your Email Address")
+                message = st.text_area("Your Message")
+    
+                # Handle the submission inside the dialog box
+                if st.button("Submit Inquiry"):
+
+                # Code to process the message goes here
+                    st.success(f"Thank you, {   name}! Your message has been sent.")
+            
+                    # Use st.rerun() if you want the app to refresh and close the modal programmatically
+                    # st.rerun() 
+                else:
+                    st.error("Please fill out all fields before submitting.")
+
+                    # 2. Main app layout
+                    st.title("contact our team")
+                    st.write("Click the button below if you need to get in touch with our team.")
+
+                    # 3. Trigger the pop-up window using a standard button click
+            if st.button("Contact Us"):
+                show_contact_form()
+                st.write(f"This is your personalized {st.session_state.current_page.lower()} view.")
+                        
+
+
     # --- BEFORE LOGIN VIEW (LOGIN / SIGNUP ONLY) ---
     else:
         # Fixed layout structure using proportional columns
@@ -209,7 +247,7 @@ def main():
                             st.rerun()
                         else:
                             st.error("Invalid username or password")
-
+            
                 elif st.session_state.auth_action == "Sign Up":
                     st.markdown('<div class="heading-bar">Create New Account</div>', unsafe_allow_html=True)
                     new_user = st.text_input("👤 Choose Username")
