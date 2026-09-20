@@ -1,3 +1,4 @@
+# db_helper.py
 import sqlite3
 
 DATABASE_NAME = "users.db"
