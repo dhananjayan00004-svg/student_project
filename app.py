@@ -4,6 +4,7 @@ from datetime import datetime  # Imported datetime to track login timestamps
 # Import functions from your separate database file
 from db_helper import init_db, add_user, verify_user, fetch_users, change_password
 import openpyxl  # For reading Excel files
+from PIL import Image  # For image processing
 # Main app
 def main():
     init_db()
@@ -104,6 +105,11 @@ def main():
             de_type = "primary" if st.session_state.current_page == "Data Entry" else "secondary"
             if st.button("📝 Data Entry", type=de_type, use_container_width=True):
                 st.session_state.current_page = "Data Entry"
+                st.rerun()
+            #image upload menu item
+            im_type = "primary" if st.session_state.current_page == "Image Upload" else "secondary"
+            if st.button("🖼️ Image Upload", type=im_type, use_container_width=True):
+                st.session_state.current_page = "Image Upload"
                 st.rerun()
             st.markdown("---")
             # 🚪 Log Out button label
@@ -228,9 +234,26 @@ def main():
                     # Optionally, you can add functionality to save this DataFrame to a database or perform further processing.
                 except Exception as e:
                     st.error(f"Error reading the Excel file: {e}")
+        #🖼️ Image Upload VIEW
+        elif st.session_state.current_page == "Image Upload":
+            st.subheader("🖼️ Image Upload")
+            st.write("Upload an image file below:")
             
-
-                
+            uploaded_image = st.file_uploader(
+                "Choose an image file",
+                type=["png", "jpg", "jpeg"]
+            )
+            
+            if uploaded_image is not None:
+                try:
+                    # Display the uploaded image
+                    image = Image.open(uploaded_image)
+                    st.image(image, caption="Uploaded Image", width=400)
+                    st.success("Image uploaded successfully!")
+                    
+                    # Optionally, you can add functionality to save this image to a database or perform further processing.
+                except Exception as e:
+                    st.error(f"Error displaying the image: {e}")
 
     # --- BEFORE LOGIN VIEW (LOGIN / SIGNUP ONLY) ---
     else:
