@@ -696,7 +696,7 @@ def main():
             st.markdown("""
             <style>
             .stApp {
-                background-color: #7fff00;
+                background-color: #000000;
             }
             h1 {
                 text-align: center;
@@ -708,14 +708,14 @@ def main():
                 color: #00ff00  !important;
                 }
                 div.stbutton>button {
-                background-color: #008b00;
+                background-color::#ffffff;
                 color: white;
                 border-radius: 8px;
                 border: none;
                 width: 100%;
                 }
                 div.stbutton>button:hover {
-                background-color: #006400;
+                background-color:#ffffff;
                 color: white;
                 }
             </style>
