@@ -1,3 +1,5 @@
+import sqlite3
+
 import pandas as pd
 import streamlit as st
 from datetime import datetime
@@ -14,6 +16,41 @@ import base64
 from io import BytesIO
 from deep_translator import MyMemoryTranslator
 
+st.set_page_config(page_title="Student App", page_icon="🎓", layout="wide")
+
+
+# =========================================================
+# ADMISSION DATABASE
+# =========================================================
+
+ADMISSION_DB = "admission.db"
+
+
+def init_admission_db():
+    """Create the admission table if it does not already exist."""
+    with sqlite3.connect(ADMISSION_DB) as conn:
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS applications (
+                application_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                username TEXT,
+                student_first TEXT NOT NULL,
+                student_last TEXT NOT NULL,
+                class_name TEXT NOT NULL,
+                dob TEXT,
+                parent_first TEXT NOT NULL,
+                parent_last TEXT NOT NULL,
+                street TEXT,
+                street2 TEXT,
+                city TEXT,
+                region TEXT,
+                postal TEXT,
+                country TEXT,
+                phone TEXT,
+                email TEXT NOT NULL
+            )
+        """)
+        conn.commit()
+
 
 # =========================================================
 # MAIN APP
@@ -21,8 +58,9 @@ from deep_translator import MyMemoryTranslator
 
 def main():
 
-    # Initialize database
+    # Initialize databases
     init_db()
+    init_admission_db()
 
     # =====================================================
     # CUSTOM CSS
@@ -684,7 +722,6 @@ def main():
         # =================================================
         # Admission Form
         # =================================================
-        
         elif st.session_state.current_page == "Admission Form":
 
             st.subheader("📝 Admission Form")
@@ -692,7 +729,6 @@ def main():
             st.write(
                 "Please fill out the admission form below:"
             )
-            st.set_page_config(page_title="Admission Form", page_icon="📝",layout="centered")
             st.markdown("""
             <style>
             .stApp {
@@ -708,7 +744,7 @@ def main():
                 color: #00ff00  !important;
                 }
                 div.stbutton>button {
-                background-color::#ffffff;
+                background-color:#ffffff;
                 color: white;
                 border-radius: 8px;
                 border: none;
@@ -723,7 +759,7 @@ def main():
             st.title("school Admission Form")
             st.write("Please fill out the form below to apply for admission.")
             with st.form("admission_form"):
-                st.markdown("**student`s Name:**")
+                st.markdown("**students Name:**")
                 col1, col2 = st.columns(2)
                 with col1:
                     first_name = st.text_input("First", key="student_first")
@@ -733,12 +769,12 @@ def main():
                 "Class you want to apply for  *",
                  placeholder="for example: 1st, 2nd, 3rd, 4th, 5th, 6th, 7th, 8th, 9th, 10th, 11th, 12th",)
                 dob = st.date_input(
-                    "student`s DOB  *",
+                    "students DOB  *",
                     min_value=datetime(2000, 1, 1),
                     max_value=datetime(2026, 12, 31),
                    help="Please select the student's date of birth."
                 )
-                st.markdown("**Parent`s/ Guardian`s Name:**")
+                st.markdown("**Parents/ Guardians Name:**")
                 col1, col2 = st.columns(2)
                 with col1:
                     parent_first = st.text_input(
@@ -774,8 +810,8 @@ def main():
 
                 if submitted:
                     if not all([
-                        first_name, last_name, class_name,
-                        parent_first, parent_last, email
+                        first_name.strip(), last_name.strip(), class_name.strip(),
+                        parent_first.strip(), parent_last.strip(), email.strip()
                     ]):
                         st.error("Please fill in all required fields.")
                     elif "@" not in email or "." not in email.split("@")[-1]:
@@ -783,17 +819,162 @@ def main():
                     elif dob is None:
                         st.error("Please select the student's date of birth.")
                     else:
-                        st.success("Admission form submitted successfully!")
+                        try:
+                            with sqlite3.connect(ADMISSION_DB) as conn:
+                                conn.execute("""
+                                    INSERT INTO applications (
+                                        username, student_first, student_last,
+                                        class_name, dob, parent_first, parent_last,
+                                        street, street2, city, region, postal,
+                                        country, phone, email
+                                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                                """, (
+                                    st.session_state.username,
+                                    first_name.strip(),
+                                    last_name.strip(),
+                                    class_name.strip(),
+                                    dob.isoformat(),
+                                    parent_first.strip(),
+                                    parent_last.strip(),
+                                    street.strip(),
+                                    street2.strip(),
+                                    city.strip(),
+                                    region.strip(),
+                                    postal.strip(),
+                                    country,
+                                    phone.strip(),
+                                    email.strip()
+                                ))
+                                conn.commit()
 
-                        st.subheader("Admission Details")
-                        st.write("Student Name:", first_name, last_name)
-                        st.write("Class:", class_name)
-                        st.write("Date of Birth:", dob)
-                        st.write("Parent Name:", parent_first, parent_last)
-                        st.write("Address:", street, street2, city, region, postal, country)
-                        st.write("Phone:", phone)
-                        st.write("Email:", email)
-        # ================================================
+                            st.success("Admission form submitted and saved successfully!")
+                            st.subheader("Admission Details")
+                            st.write("Student Name:", first_name, last_name)
+                            st.write("Class:", class_name)
+                            st.write("Date of Birth:", dob)
+                            st.write("Parent Name:", parent_first, parent_last)
+                            st.write("Address:", street, street2, city, region, postal, country)
+                            st.write("Phone:", phone)
+                            st.write("Email:", email)
+                        except sqlite3.Error as e:
+                            st.error(f"Could not save the admission application: {e}")
+
+            # -------- MANAGE APPLICATIONS LEDGER --------
+
+            st.markdown("---")
+            st.subheader("📋 Manage Applications Ledger")
+            st.info(
+                "💡 Double-click a cell to edit it. Select rows to delete, "
+                "then click Save Changes to Database."
+            )
+
+            try:
+                with sqlite3.connect(ADMISSION_DB) as conn:
+                    df = pd.read_sql_query(
+                        """
+                        SELECT
+                            application_id AS "Application ID",
+                            username AS "Submitted By",
+                            student_first AS "Student First Name",
+                            student_last AS "Student Last Name",
+                            class_name AS "Class",
+                            dob AS "Date of Birth",
+                            parent_first AS "Guardian First Name",
+                            parent_last AS "Guardian Last Name",
+                            street AS "Street Address",
+                            street2 AS "Address Line 2",
+                            city AS "City",
+                            region AS "Region",
+                            postal AS "Postal Code",
+                            country AS "Country",
+                            phone AS "Phone",
+                            email AS "Email"
+                        FROM applications
+                        ORDER BY application_id DESC
+                        """,
+                        conn
+                    )
+
+                if not df.empty:
+                    df.insert(0, "Select to Delete", False)
+
+                    edited_df = st.data_editor(
+                        df,
+                        use_container_width=True,
+                        hide_index=True,
+                        num_rows="fixed",
+                        key="application_ledger",
+                        disabled=["Application ID", "Submitted By"],
+                        column_config={
+                            "Select to Delete": st.column_config.CheckboxColumn(
+                                "Select to Delete",
+                                help="Tick this box to delete the application."
+                            )
+                        }
+                    )
+
+                    if st.button("💾 Save Changes to Database", type="primary"):
+                        try:
+                            with sqlite3.connect(ADMISSION_DB) as conn:
+                                cursor = conn.cursor()
+
+                                for _, row in edited_df.iterrows():
+                                    app_id = int(row["Application ID"])
+
+                                    if bool(row["Select to Delete"]):
+                                        cursor.execute(
+                                            "DELETE FROM applications WHERE application_id = ?",
+                                            (app_id,)
+                                        )
+                                    else:
+                                        cursor.execute("""
+                                            UPDATE applications
+                                            SET student_first = ?,
+                                                student_last = ?,
+                                                class_name = ?,
+                                                dob = ?,
+                                                parent_first = ?,
+                                                parent_last = ?,
+                                                street = ?,
+                                                street2 = ?,
+                                                city = ?,
+                                                region = ?,
+                                                postal = ?,
+                                                country = ?,
+                                                phone = ?,
+                                                email = ?
+                                            WHERE application_id = ?
+                                        """, (
+                                            str(row["Student First Name"]),
+                                            str(row["Student Last Name"]),
+                                            str(row["Class"]),
+                                            str(row["Date of Birth"]),
+                                            str(row["Guardian First Name"]),
+                                            str(row["Guardian Last Name"]),
+                                            str(row["Street Address"]),
+                                            str(row["Address Line 2"]),
+                                            str(row["City"]),
+                                            str(row["Region"]),
+                                            str(row["Postal Code"]),
+                                            str(row["Country"]),
+                                            str(row["Phone"]),
+                                            str(row["Email"]),
+                                            app_id
+                                        ))
+                                conn.commit()
+
+                            st.session_state.pop("application_ledger", None)
+                            st.success("Changes saved to the database successfully!")
+                            st.rerun()
+                        except (sqlite3.Error, ValueError, TypeError) as e:
+                            st.error(f"Could not save changes: {e}")
+                else:
+                    st.warning("No applications found yet. Submit the form above first.")
+
+            except sqlite3.Error as e:
+                st.error(f"Could not load applications: {e}")
+
+        
         # UNKNOWN PAGE
         # =================================================
 
