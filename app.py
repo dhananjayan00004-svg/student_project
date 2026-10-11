@@ -743,14 +743,14 @@ def main():
                 color: #00ff00  !important;
                 }
                 div.stbutton>button {
-                background-color:#ffffff;
+                background-color: #00ff00;
                 color: white;
                 border-radius: 8px;
                 border: none;
                 width: 100%;
                 }
                 div.stbutton>button:hover {
-                background-color:#ffffff;
+                background-color: #00cc00;
                 color: white;
                 }
             </style>
