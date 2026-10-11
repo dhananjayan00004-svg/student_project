@@ -731,7 +731,7 @@ def main():
             st.markdown("""
             <style>
             .stApp {
-                background-color: #000000;
+                background-color: #system;
             }
             h1 {
                 text-align: center;
