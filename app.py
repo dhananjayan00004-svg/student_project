@@ -735,7 +735,7 @@ def main():
             }
             h1 {
                 text-align: center;
-                color: #adff2f;
+                color: #00ff00;
                 font-size: 36px;
                 font-weight: 400;
             }
