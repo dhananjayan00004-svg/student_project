@@ -14,7 +14,6 @@ import openpyxl
 from PIL import Image
 import base64
 from io import BytesIO
-from deep_translator import MyMemoryTranslator
 
 st.set_page_config(page_title="Student App", page_icon="🎓", layout="wide")
 
